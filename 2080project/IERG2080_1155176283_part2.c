@@ -25,7 +25,7 @@
 
 int transfer_player_number;
 int transfer_size;
-char trannsfer_color;
+char transfer_color;
 
 typedef struct Card{
 	char color;
@@ -50,10 +50,10 @@ Card* AddCard(Card* player_deck , char color , int size){
 }
 
 void print_hand(Card* deck){
-	FILE* output = fopen("output.txt" , "w");
-	while(deck!=deck->next){
-		fprintf(output , "%c%d " , deck->color , deck->size);
-		deck=deck->next;
+	Card* tmp=deck;
+	while(tmp->next!=tmp){
+		printf("%c%d\n" , tmp->color , tmp->size);
+		tmp=tmp->next;
 	}
 }
 
@@ -71,39 +71,41 @@ int jumpin(Card* player_deck , char color , int size){
 
 int have_card(Card* player_deck , char color , int size){
 	Card* tmp=player_deck;
-	Card* previous = NULL;
+	printf("now in have card\n");
 	while(tmp->next!=tmp){
+		printf("%c%d\n" , tmp->color , tmp->size);
 		if(tmp->size==size){
-			trannsfer_color=tmp->color;
-			free(tmp);
+			transfer_color=tmp->color;
 			return 1;
 		}
 		else if(tmp->color==color){
 			transfer_size=tmp->size;
-			free(tmp);
 			return 2;
 		}
-		previous = tmp;
 		tmp=tmp->next;
 	}
 	return 0;
 }
 
 Card* remove_card(Card* deck , char c , int d){
+	printf("now in remove card\n");
 	Card *current , *previous;
 	current=deck;
-	previous=Create_dummy_card();
+	previous=(Card*)malloc(sizeof(Card));
 	while(current->next!=current){
+		printf("%c%d\n" , current->color , current->size);
 		if(current->color==c && current->size==d){
 			if(current==deck){
-				deck=deck->next;
+				deck=current->next;
 				free(current);
 				current=deck;
+				return deck;
 			}
 			else{
 				previous->next=current->next;
 				free(current);
 				current = previous->next;
+				return deck;
 			}
 		}
 		else{
@@ -130,7 +132,6 @@ int main(int argc, char **argv){
 	int d;
 	for(int i=0;i<=number_of_player+1;i++){//memory allocate
 		player_deck[i]=Create_dummy_card();
-		printf("address of deck[%d]: %d\n" , i , player_deck[i]);
 	}
 	for(int i=1;i<=number_of_player;i++){
 		fscanf(original_hand , "%d " , &player_no);
@@ -142,7 +143,6 @@ int main(int argc, char **argv){
 			if(str[j]=='\n')break;
 		}
 	}
-
 	fclose(original_hand);
 	FILE* Carddeck = fopen(argv[2] , "r");
 	if(!Carddeck){
@@ -164,8 +164,17 @@ int main(int argc, char **argv){
 	fscanf(table , "%d %c%d " , &tmp , &c , &d);
 	fclose(table);
 	table=fopen(argv[3] , "a");
+	c='G';
+	d=5;
+	print_hand(player_deck[1]);
+	if(have_card(player_deck[1] , c , d)==1){
+		d=transfer_color;
+		player_deck[1] = remove_card(player_deck[1] , c , d);
+		printf("1 %c%d\n" , c , d);
+		print_hand(player_deck[1]);
+	}
 	//game progress
-	int cnt=0;
+	/*int cnt=0;
 	int winner=0;
 	while(game_continue){
 		int current_player = (cnt%number_of_player)+1;
@@ -225,5 +234,6 @@ int main(int argc, char **argv){
 		} 
 	}
 	fclose(output);
+	*/
 	return 0;
 }
